@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import "./App.css";
-import { getAllProducts } from "./api";
+import { getAllProducts, addProduct } from "./api";
+import AddProduct from "./AddProduct";
 
 const App = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,10 +29,6 @@ const App = () => {
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
-
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   const addToCart = async (product) => {
     let existingProduct;
@@ -65,12 +63,26 @@ const App = () => {
   };
 
   const removeFromCart = async (productId) => {
-    await fetch(`http://localhost:5000/cart/${productId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(`http://localhost:5000/cart/${productId}`);
+    const product = await response.json();
+  
+    if (product.quantity > 1) {
+      product.quantity -= 1;
+      await fetch(`http://localhost:5000/cart/${productId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(product),
+      });
+    } else {
+      await fetch(`http://localhost:5000/cart/${productId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    }
 
     await fetchCart();
     // console.log("Removing product with id:", productId);
@@ -79,49 +91,66 @@ const App = () => {
     // setCart(updatedCart);
   };
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Welcome to my React Shop</h1>
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <div className="products">
-          {filteredProducts.map((product) => (
-            <div key={product.id} className="product">
-              <img src={product.image} alt={product.name} />
-              <h2>{product.name}</h2>
-              <p>₪{product.price.toFixed(2)}</p>
-              <button onClick={() => addToCart(product)}>Add to Cart</button>
-            </div>
-          ))}
-        </div>
-      </header>
-      <footer className="App-footer">
-        <h2>Shopping Cart</h2>
-        <div className="cart">
-          {cart.map((product) => (
-            <div key={product.id} className="cart-item">
-              <img src={product.image} alt={product.name} />
-              <h2>{product.name}</h2>
-              <p>${product.price.toFixed(2)}</p>
-              <button
-                onClick={() => {
-                  console.log("Clicked remove for product id:", product.id);
-                  removeFromCart(product.id);
-                }}
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-        </div>
-      </footer>
-    </div>
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-}
+
+  return (
+    <Router>
+      <div className="App">
+        <header className="App-header">
+          <h1>Welcome to my React Shop</h1>
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Link to="/add-product">
+            <button>Add New Product</button>
+          </Link>
+        </header>
+        <Routes>
+        <Route path="/add-product" element={<AddProduct fetchProducts={fetchProducts} />} />
+          <Route path="/" element={
+            <>
+              <div className="products">
+                {filteredProducts.map((product) => (
+                  <div key={product.id} className="product">
+                    <img src={product.image} alt={product.name} />
+                    <h2>{product.name}</h2>
+                    <p>₪{product.price.toFixed(2)}</p>
+                    <button onClick={() => addToCart(product)}>Add to Cart</button>
+                  </div>
+                ))}
+              </div>
+              <footer className="App-footer">
+                <h2>Shopping Cart</h2>
+                <div className="cart">
+                  {cart.map((product) => (
+                    <div key={product.id} className="cart-item">
+                      <img src={product.image} alt={product.name} />
+                      <h2>{product.name}</h2>
+                      <p>Quantity: {product.quantity}</p>
+                      <p>${product.price.toFixed(2)}</p>
+                      <button
+                        onClick={() => {
+                          console.log("Clicked remove for product id:", product.id);
+                          removeFromCart(product.id);
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </footer>
+            </>
+          } />
+        </Routes>
+      </div>
+    </Router>
+  );
+};
 
 export default App;
