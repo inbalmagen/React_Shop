@@ -1,32 +1,63 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
-import { getAllProducts } from './api';
+import React, { useState, useEffect } from "react";
+import "./App.css";
+import { getAllProducts } from "./api";
 
 function App() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
 
+  async function fetchProducts() {
+    const products = await getAllProducts();
+    setProducts(products);
+  }
+  async function fetchCart() {
+    const response = await fetch("http://localhost:5000/cart");
+    const cart = await response.json();
+    setCart(cart);
+  }
   useEffect(() => {
-    async function fetchProducts() {
-      const products = await getAllProducts();
-      setProducts(products);
-    }
     fetchProducts();
   }, []);
 
-  const filteredProducts = products.filter(product =>
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const addToCart = product => {
-    setCart([...cart, product]);
-  }
+  const addToCart = async (product) => {
+    await fetch("http://localhost:5000/cart", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(product),
+    });
+    await fetchCart();
+    // setCart([...cart, product]);
+  };
 
-  const removeFromCart = (productId) => {
-    setCart(cart.filter(product => product.id !== productId));
-  }
+  const removeFromCart = async (productId) => {
+    await fetch(`http://localhost:5000/cart/${productId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
+    await fetchCart();
+    // console.log("Removing product with id:", productId);
+    // const updatedCart = cart.filter((product) => product.id !== productId);
+    // console.log("Updated cart:", updatedCart);
+    // setCart(updatedCart);
+  };
 
   return (
     <div className="App">
@@ -36,10 +67,10 @@ function App() {
           type="text"
           placeholder="Search products..."
           value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-        />        
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
         <div className="products">
-          {filteredProducts.map(product => (
+          {filteredProducts.map((product) => (
             <div key={product.id} className="product">
               <img src={product.image} alt={product.name} />
               <h2>{product.name}</h2>
@@ -52,17 +83,23 @@ function App() {
       <footer className="App-footer">
         <h2>Shopping Cart</h2>
         <div className="cart">
-          {cart.map(product => (
+          {cart.map((product) => (
             <div key={product.id} className="cart-item">
               <img src={product.image} alt={product.name} />
               <h2>{product.name}</h2>
               <p>${product.price.toFixed(2)}</p>
-              <button onClick={() => removeFromCart(product.id)}>Remove</button>
+              <button
+                onClick={() => {
+                  console.log("Clicked remove for product id:", product.id);
+                  removeFromCart(product.id);
+                }}
+              >
+                Remove
+              </button>
             </div>
           ))}
         </div>
       </footer>
-
     </div>
   );
 }
