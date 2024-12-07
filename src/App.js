@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { getAllProducts } from "./api";
 
-function App() {
+const App = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
@@ -33,15 +33,35 @@ function App() {
   );
 
   const addToCart = async (product) => {
-    await fetch("http://localhost:5000/cart", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(product),
-    });
+    let existingProduct;
+    const response = await fetch(`http://localhost:5000/cart/${product.id}`);
+    if (response.status === 404) {
+      existingProduct = null;
+    } else {
+      existingProduct = await response.json();
+    }
+    if (existingProduct) {
+      // If it exists, update the quantity
+      existingProduct.quantity += 1;
+      await fetch(`http://localhost:5000/cart/${existingProduct.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(existingProduct),
+      });
+    } else {
+      // If it doesn't exist, add the product with quantity 1
+      product.quantity = 1;
+      await fetch("http://localhost:5000/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(product),
+      });
+    }
     await fetchCart();
-    // setCart([...cart, product]);
   };
 
   const removeFromCart = async (productId) => {
