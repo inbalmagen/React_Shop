@@ -1,31 +1,42 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { addProduct } from '../api';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { getProductById, updateProduct } from '../api';
 
-const AddProduct = ({ fetchProducts }) => {
+const UpdateProduct = ({ fetchProducts }) => {
+  const { id } = useParams();
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [image, setImage] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchProduct = async () => {
+      const product = await getProductById(id);
+      setName(product.name);
+      setPrice(product.price);
+      setImage(product.image);
+    };
+    fetchProduct();
+  }, [id]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newProduct = {
-      id: Date.now().toString(),
+    const updatedProduct = {
+      id,
       name,
       price: parseFloat(price),
       image,
     };
-    await addProduct(newProduct);
+    await updateProduct(updatedProduct);
     fetchProducts(); // Fetch the updated list of products
     navigate('/'); // Navigate back to the home page
   };
 
   return (
-    <div className="add-product">
-      <h2>Add New Product</h2>
+    <div className="update-product">
+      <h2>Update Product</h2>
       <form onSubmit={handleSubmit}>
-        <div className="from-group">
+        <div className="form-group">
           <label>Name:</label>
           <input
             type="text"
@@ -34,7 +45,7 @@ const AddProduct = ({ fetchProducts }) => {
             required
           />
         </div>
-        <div className="from-group">
+        <div className="form-group">
           <label>Price:</label>
           <input
             type="number"
@@ -43,7 +54,7 @@ const AddProduct = ({ fetchProducts }) => {
             required
           />
         </div>
-        <div className="from-group">
+        <div className="form-group">
           <label>Image URL:</label>
           <input
             type="text"
@@ -52,10 +63,13 @@ const AddProduct = ({ fetchProducts }) => {
             required
           />
         </div>
-        <button type="submit">Add Product</button>
+        <button type="submit">Update Product</button>
       </form>
+      <Link to="/">
+        <button>Cancel</button>
+      </Link>
     </div>
   );
 };
 
-export default AddProduct;
+export default UpdateProduct;

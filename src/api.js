@@ -13,3 +13,17 @@ export async function addProduct(product) {
   });
   return response.data;
 }
+
+export async function getProductById(id) {
+  const response = await axios.get(`http://localhost:5000/products/${id}`);
+  return response.data;
+}
+
+export async function updateProduct(product) {
+  const response = await axios.put(`http://localhost:5000/products/${product.id}`, product, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+}

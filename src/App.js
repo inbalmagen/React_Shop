@@ -4,7 +4,7 @@ import "./App.css";
 import { getAllProducts } from "./api";
 import AddProduct from "./components/AddProduct"; // Updated path
 import Product from "./components/Product"; // Updated path
-
+import UpdateProduct from "./components/UpdateProduct"; // Import the UpdateProduct component
 
 
 const App = () => {
@@ -90,6 +90,10 @@ const App = () => {
     await fetchCart();
   };
 
+  const calculateTotalPrice = () => {
+    return cart.reduce((total, product) => total + product.price * product.quantity, 0);
+  };
+
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -111,7 +115,8 @@ const App = () => {
         </header>
         <Routes>
         <Route path="/add-product" element={<AddProduct fetchProducts={fetchProducts} />} />
-          <Route path="/" element={
+        <Route path="/update-product/:id" element={<UpdateProduct fetchProducts={fetchProducts} />} />
+        <Route path="/" element={
             <>
               <div className="products">
                 {filteredProducts.map((product) => (
@@ -137,6 +142,9 @@ const App = () => {
                       </button>
                     </div>
                   ))}
+                </div>
+                <div className="total-price">
+                  <h3>Total Price: ₪{calculateTotalPrice().toFixed(2)}</h3>
                 </div>
               </footer>
             </>
