@@ -50,19 +50,26 @@
       "name": "Product 1",
       "price": 10,
       "image": "https://via.placeholder.com/150",
+      "quantity": 4
+    },
+    {
+      "id": "1733585274371",
+      "name": "5",
+      "price": 555,
+      "image": "https://via.placeholder.com/150",
+      "quantity": 3
+    },
+    {
+      "id": "2",
+      "name": "Product 2",
+      "price": 20,
+      "image": "https://via.placeholder.com/150",
       "quantity": 1
     },
     {
       "id": "1733571822038",
       "name": "producgt 4",
       "price": 444,
-      "image": "https://via.placeholder.com/150",
-      "quantity": 1
-    },
-    {
-      "id": "1733570553931",
-      "name": "New Product",
-      "price": 40,
       "image": "https://via.placeholder.com/150",
       "quantity": 1
     }

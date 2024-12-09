@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import "./App.css";
-import { getAllProducts, addProduct } from "./api";
-import AddProduct from "./AddProduct";
+import { getAllProducts } from "./api";
+import AddProduct from "./components/AddProduct"; // Updated path
+import Product from "./components/Product"; // Updated path
+
+
 
 const App = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,10 +88,6 @@ const App = () => {
     }
 
     await fetchCart();
-    // console.log("Removing product with id:", productId);
-    // const updatedCart = cart.filter((product) => product.id !== productId);
-    // console.log("Updated cart:", updatedCart);
-    // setCart(updatedCart);
   };
 
   const filteredProducts = products.filter((product) =>
@@ -116,12 +115,7 @@ const App = () => {
             <>
               <div className="products">
                 {filteredProducts.map((product) => (
-                  <div key={product.id} className="product">
-                    <img src={product.image} alt={product.name} />
-                    <h2>{product.name}</h2>
-                    <p>₪{product.price.toFixed(2)}</p>
-                    <button onClick={() => addToCart(product)}>Add to Cart</button>
-                  </div>
+                  <Product key={product.id} product={product} addToCart={addToCart} />
                 ))}
               </div>
               <footer className="App-footer">
